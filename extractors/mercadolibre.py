@@ -7,31 +7,28 @@ def normalize_value(value):
 
 def extract_information_mercadolibre(html_content):
     soup = BeautifulSoup(html_content, 'html.parser')
-    productos = soup.find_all('div', {'class': 'ui-search-result__content-wrapper'})
+    productos = soup.find_all('div', {'class': 'ui-search-result__wrapper'})
     resultados = []
     for producto in productos:
-        titulo_elemento = producto.find('a', {'class': 'ui-search-link'})
-        precio_elemento = producto.find('span', {'role': 'img'})
-        mensualidades_elemento = producto.find('span', {'class': 'ui-search-installments ui-search-color--LIGHT_GREEN'})
-        envio_gratis_elemento = producto.find('span', {'class': 'ui-pb-highlight'})
-        precio_anterior_elemento = producto.find('s', {'class': 'andes-money-amount ui-search-price__part ui-search-price__part--small ui-search-price__original-value'})
-        calificacion_elemento = producto.find('div', {'class': 'ui-search-reviews'})
+        titulo_elemento = producto.find('a', {'class': 'ui-search-item__group__element ui-search-link__title-card ui-search-link'})
+        precio_elemento = producto.find('span', {'class': 'andes-money-amount ui-search-price__part ui-search-price__part--medium andes-money-amount--cents-superscript'})
+        envio_gratis_elemento = producto.find('svg', {'aria-label': 'full'})
+        precio_anterior_elemento = producto.find('s')
+        calificacion_elemento = producto.find('span', {'class': 'ui-search-reviews__rating-number'})
 
         if titulo_elemento and precio_elemento:
-            titulo = normalize_value(titulo_elemento.find('h2', {'class': 'ui-search-item__title'}).text)
-            precio = normalize_value(precio_elemento.get('aria-label', '').split()[-2]).replace(',', '')
+            titulo = normalize_value(titulo_elemento.get('title'))
+            precio = normalize_value(precio_elemento.find('span', {'class': 'andes-money-amount__fraction'}).text.replace(',', ''))
             enlace = normalize_value(titulo_elemento.get('href'))
             
-            mensualidades = normalize_value(mensualidades_elemento.text) if mensualidades_elemento else ""
-            envio_gratis = normalize_value(envio_gratis_elemento.text) if envio_gratis_elemento else ""
-            precio_anterior = normalize_value(precio_anterior_elemento.text) if precio_anterior_elemento else ""
-            calificacion = normalize_value(calificacion_elemento.text) if calificacion_elemento else ""
+            envio_gratis = normalize_value(envio_gratis_elemento.text)
+            precio_anterior = normalize_value(precio_anterior_elemento.find('span', {'class': 'andes-money-amount__fraction'}).text)
+            calificacion = normalize_value(calificacion_elemento.text)
             
             resultados.append({
                 "titulo": titulo,
                 "precio": precio,
                 "enlace": enlace,
-                "mensualidades": mensualidades,
                 "envio_gratis": envio_gratis,
                 "precio_anterior": precio_anterior,
                 "calificacion": calificacion
